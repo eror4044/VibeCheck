@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Response
 from pydantic import BaseModel, Field
 
 from app.api.deps import get_settings, ideas_repo, require_user_id
@@ -276,15 +276,16 @@ def update_my_idea(
     )
 
 
-@router.delete("/{idea_id}", status_code=204)
+@router.delete("/{idea_id}", status_code=204, response_class=Response)
 def delete_my_idea(
     idea_id: UUID,
     user_id: UUID = Depends(require_user_id),
     ideas: IdeaRepository = Depends(ideas_repo),
-) -> None:
+) -> Response:
     deleted = ideas.delete(idea_id=idea_id, author_id=user_id)
     if not deleted:
         raise HTTPException(status_code=404, detail="Idea not found")
+    return Response(status_code=204)
 
 
 @router.post("/{idea_id}/publish", response_model=MyIdeaResponse)
@@ -387,14 +388,14 @@ class _RegisterMediaRequest(BaseModel):
     media_type: str = "image"
 
 
-@router.delete("/{idea_id}/media/{media_id}", status_code=204)
+@router.delete("/{idea_id}/media/{media_id}", status_code=204, response_class=Response)
 def delete_media(
     idea_id: UUID,
     media_id: UUID,
     user_id: UUID = Depends(require_user_id),
     ideas: IdeaRepository = Depends(ideas_repo),
     media_repo: PostgresIdeaMediaRepository = Depends(_media_repo),
-) -> None:
+) -> Response:
     idea = ideas.get_by_id(idea_id=idea_id)
     if not idea or idea.author_id != user_id:
         raise HTTPException(status_code=404, detail="Idea not found")
@@ -402,3 +403,4 @@ def delete_media(
     deleted = media_repo.delete(media_id=media_id, idea_id=idea_id)
     if not deleted:
         raise HTTPException(status_code=404, detail="Media not found")
+    return Response(status_code=204)
