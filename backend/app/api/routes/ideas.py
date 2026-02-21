@@ -15,7 +15,7 @@ class CreateIdeaRequest(BaseModel):
     short_pitch: str = Field(min_length=1, max_length=160)
     category: str = Field(min_length=1, max_length=40)
     tags: list[str] | None = Field(default=None)
-    media_url: str = Field(min_length=10)
+    media_url: str = Field(min_length=1)
 
     one_liner: str | None = Field(default=None, max_length=120)
     problem: str | None = Field(default=None, max_length=240)
@@ -24,6 +24,7 @@ class CreateIdeaRequest(BaseModel):
     differentiator: str | None = Field(default=None, max_length=140)
     stage: str = Field(default="idea")
     links: dict | None = Field(default=None)
+    status: str = Field(default="published")
 
 
 class IdeaResponse(BaseModel):
@@ -58,6 +59,7 @@ def create_idea(body: CreateIdeaRequest, ideas: IdeaRepository = Depends(ideas_r
         differentiator=body.differentiator,
         stage=body.stage,
         links=body.links,
+        status=body.status,
     )
     return IdeaResponse(
         id=str(idea.id),

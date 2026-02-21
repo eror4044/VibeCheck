@@ -7,8 +7,10 @@ class AppShell extends StatelessWidget {
   final Widget child;
 
   int _indexForLocation(String location) {
-    if (location.startsWith('/profile')) return 1;
-    return 0; // default: swipe
+    if (location.startsWith('/my-ideas')) return 1;
+    if (location.startsWith('/stats')) return 2;
+    if (location.startsWith('/profile') || location.startsWith('/settings')) return 3;
+    return 0; // default: swipe / explore
   }
 
   void _onTap(BuildContext context, int index) {
@@ -17,6 +19,12 @@ class AppShell extends StatelessWidget {
         context.go('/swipe');
         return;
       case 1:
+        context.go('/my-ideas');
+        return;
+      case 2:
+        context.go('/stats');
+        return;
+      case 3:
         context.go('/profile');
         return;
     }
@@ -33,7 +41,9 @@ class AppShell extends StatelessWidget {
         selectedIndex: currentIndex,
         onDestinationSelected: (i) => _onTap(context, i),
         destinations: const [
-          NavigationDestination(icon: Icon(Icons.swipe), label: 'Swipe'),
+          NavigationDestination(icon: Icon(Icons.explore), label: 'Explore'),
+          NavigationDestination(icon: Icon(Icons.lightbulb_outline), label: 'My Ideas'),
+          NavigationDestination(icon: Icon(Icons.bar_chart), label: 'Stats'),
           NavigationDestination(icon: Icon(Icons.person), label: 'Profile'),
         ],
       ),
