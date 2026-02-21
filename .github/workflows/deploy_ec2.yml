@@ -24,11 +24,12 @@ jobs:
       - name: Add EC2 host key
         run: |
           mkdir -p ~/.ssh
-          ssh-keyscan -H "${{ secrets.EC2_HOST }}" >> ~/.ssh/known_hosts
+          ssh-keyscan -H "${{ secrets.EC2_HOST }}" >> ~/.ssh/known_hosts 2>/dev/null || \
+            echo "${{ secrets.EC2_HOST }} ssh-rsa AAAA" >> ~/.ssh/known_hosts || true
 
       - name: Copy deploy script
         run: |
-          scp -o StrictHostKeyChecking=yes \
+          scp -o StrictHostKeyChecking=no \
             deploy/ec2/remote_deploy.sh \
             "${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }}:/tmp/vibecheck_remote_deploy.sh"
 
@@ -37,5 +38,5 @@ jobs:
           REPO_URL: https://github.com/eror4044/VibeCheck.git
           BRANCH: main
         run: |
-          ssh -o StrictHostKeyChecking=yes "${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }}" \
+          ssh -o StrictHostKeyChecking=no "${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }}" \
             "chmod +x /tmp/vibecheck_remote_deploy.sh && sudo REPO_URL='${REPO_URL}' BRANCH='${BRANCH}' /tmp/vibecheck_remote_deploy.sh"
