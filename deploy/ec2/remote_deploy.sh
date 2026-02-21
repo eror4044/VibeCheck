@@ -80,8 +80,18 @@ healthcheck() {
     return 1
   fi
 
-  curl -fsS "https://$domain/healthz" >/dev/null
-  echo "OK: https://$domain/healthz"
+  local url="https://$domain/healthz"
+  local attempts=0
+  until curl -fsS "$url" >/dev/null 2>&1; do
+    attempts=$((attempts + 1))
+    if [ "$attempts" -ge 12 ]; then
+      echo "ERROR: $url did not respond after 60s" >&2
+      return 1
+    fi
+    echo "Waiting for API... ($attempts/12)"
+    sleep 5
+  done
+  echo "OK: $url"
 }
 
 main() {
