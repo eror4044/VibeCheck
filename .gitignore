@@ -1,0 +1,21 @@
+__pycache__/
+*.py[cod]
+*.pyo
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+.env
+.env.*
+
+# Local tooling
+.vscode/
+
+# Docker
+**/.docker/
+
+# Secrets / keys (DO NOT COMMIT)
+*.pem
+*.key
+*.p12
+*.pfx

@@ -1,0 +1,41 @@
+name: Deploy to EC2
+
+on:
+  push:
+    branches: ["main"]
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-ec2-main
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Start SSH agent
+        uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: ${{ secrets.EC2_SSH_KEY }}
+
+      - name: Add EC2 host key
+        run: |
+          mkdir -p ~/.ssh
+          ssh-keyscan -H "${{ secrets.EC2_HOST }}" >> ~/.ssh/known_hosts
+
+      - name: Copy deploy script
+        run: |
+          scp -o StrictHostKeyChecking=yes \
+            deploy/ec2/remote_deploy.sh \
+            "${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }}:/tmp/vibecheck_remote_deploy.sh"
+
+      - name: Run deploy
+        env:
+          REPO_URL: https://github.com/eror4044/VibeCheck.git
+          BRANCH: main
+        run: |
+          ssh -o StrictHostKeyChecking=yes "${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }}" \
+            "chmod +x /tmp/vibecheck_remote_deploy.sh && sudo REPO_URL='${REPO_URL}' BRANCH='${BRANCH}' /tmp/vibecheck_remote_deploy.sh"

@@ -1,0 +1,16 @@
+[Unit]
+Description=VibeCheck API (Docker Compose, build on host)
+Requires=docker.service
+After=docker.service
+
+[Service]
+Type=oneshot
+RemainAfterExit=true
+WorkingDirectory=/opt/vibecheck
+ExecStartPre=/usr/bin/docker compose -f /opt/vibecheck/docker-compose.prod.yml -f /opt/vibecheck/docker-compose.build.override.yml --env-file /opt/vibecheck/.env.prod build
+ExecStart=/usr/bin/docker compose -f /opt/vibecheck/docker-compose.prod.yml -f /opt/vibecheck/docker-compose.build.override.yml --env-file /opt/vibecheck/.env.prod up -d
+ExecStop=/usr/bin/docker compose -f /opt/vibecheck/docker-compose.prod.yml -f /opt/vibecheck/docker-compose.build.override.yml --env-file /opt/vibecheck/.env.prod down
+TimeoutStartSec=0
+
+[Install]
+WantedBy=multi-user.target
